@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "routes": [
+    { "src": "/check_key", "dest": "/api/check_key.js" }
+  ]
+}
