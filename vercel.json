@@ -1,6 +1,12 @@
 {
   "version": 2,
   "routes": [
-    { "src": "/check_key", "dest": "/api/check_key.js" }
-  ]
+    { "src": "/check_key", "dest": "/api/check_key.js" },
+    { "src": "/api/validate", "dest": "/api/validate.js" },
+    { "src": "/api/activate-payment", "dest": "/api/validate.js" }
+  ],
+  "functions": {
+    "api/check_key.js": { "maxDuration": 30 },
+    "api/validate.js": { "maxDuration": 30 }
+  }
 }
