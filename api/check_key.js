@@ -39,7 +39,7 @@ module.exports = async (req, res) => {
   // Parse query string manually (Vercel fix)
   const urlModule = require('url');
   const parsed = urlModule.parse(req.url || '', true);
-  const q = (req.query && Object.keys(req.query).length > 0) ? req.query : parsed.query;
+  const q = parsed.query || req.query || {};
 
   // DEBUG endpoint
   if (q.debug) {
@@ -48,7 +48,9 @@ module.exports = async (req, res) => {
       query: req.query,
       parsed_query: parsed.query,
       q: q,
-      method: req.method
+      method: req.method,
+      key_from_q: q.key,
+      key_exists: !!q.key
     });
   }
 
@@ -164,15 +166,9 @@ module.exports = async (req, res) => {
     } catch(e) {}
 
     client.release();
-    return res.status(200).json({
-      status: 'success',
-      trang_thai: 'thanh_cong',
-      message: 'OK',
-      data: '',
-      lib: '',
-      key: key,
-      ngay_het_han: row.expires_at || '',
-    });
+    // APK expects plain "OK" string, not JSON
+    res.setHeader('Content-Type', 'text/plain');
+    return res.status(200).send('OK');
 
   } catch (err) {
     if (client) try { client.release(); } catch(e) {}
