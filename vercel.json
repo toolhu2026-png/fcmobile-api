@@ -1,11 +1,5 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/check_key", "destination": "/api/check_key.js" },
-    { "source": "/api/validate", "destination": "/api/validate.js" },
-    { "source": "/api/activate-payment", "destination": "/api/validate.js" },
-    { "source": "/admin", "destination": "/api/admin.js" }
-  ],
   "functions": {
     "api/check_key.js": { "maxDuration": 30 },
     "api/validate.js": { "maxDuration": 30 },
