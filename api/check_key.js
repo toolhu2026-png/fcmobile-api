@@ -1,13 +1,3 @@
-// DEBUG - xoa sau khi test
-if (req.query.debug) {
-  return res.status(200).json({
-    url: req.url,
-    query: req.query,
-    method: req.method,
-    parsedUrl: require('url').parse(req.url, true).query
-  });
-}
-
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -16,7 +6,6 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000,
 });
 
-// Tao bang neu chua co
 async function ensureTables(client) {
   await client.query(`
     CREATE TABLE IF NOT EXISTS license_keys (
@@ -44,25 +33,36 @@ async function ensureTables(client) {
 }
 
 module.exports = async (req, res) => {
-// Manual parse query string
-const url = require('url');
-const parsedUrl = url.parse(req.url, true);
-if (!req.query || Object.keys(req.query).length === 0) {
-  req.query = parsedUrl.query;
-}
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
 
-  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
+  // Parse query string manually (Vercel fix)
+  const urlModule = require('url');
+  const parsed = urlModule.parse(req.url || '', true);
+  const q = (req.query && Object.keys(req.query).length > 0) ? req.query : parsed.query;
 
+  // DEBUG endpoint
+  if (q.debug) {
+    return res.status(200).json({
+      url: req.url,
+      query: req.query,
+      parsed_query: parsed.query,
+      q: q,
+      method: req.method
+    });
+  }
+
+  const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '';
   let key = '';
   let device = '';
 
-  if (req.query.key) {
-    key = req.query.key.trim();
-    device = (req.query.device || '').trim();
+  // 1. Tu query string
+  if (q.key) {
+    key = q.key.trim();
+    device = (q.device || '').trim();
   }
 
+  // 2. Tu POST body
   if (!key && req.body) {
     try {
       let bodyStr = '';
@@ -72,8 +72,8 @@ if (!req.query || Object.keys(req.query).length === 0) {
         if (req.body.token) {
           try {
             const outerJson = JSON.parse(Buffer.from(req.body.token, 'base64').toString('utf8'));
-            if (outerJson.data || outerJson.Data) {
-              const dataB64 = outerJson.data || outerJson.Data;
+            const dataB64 = outerJson.data || outerJson.Data;
+            if (dataB64) {
               const innerJson = JSON.parse(Buffer.from(dataB64, 'base64').toString('utf8'));
               key = innerJson.key || innerJson.Key || '';
               device = innerJson.deviceid || innerJson.device_id || innerJson.device || '';
@@ -112,8 +112,6 @@ if (!req.query || Object.keys(req.query).length === 0) {
       }
     } catch(e) {}
   }
-
-  console.log('Request - key:', key, 'device:', device, 'ip:', ip);
 
   if (!key) {
     return res.status(200).json({ status: 'error', message: 'Key không được để trống' });
@@ -166,7 +164,6 @@ if (!req.query || Object.keys(req.query).length === 0) {
     } catch(e) {}
 
     client.release();
-
     return res.status(200).json({
       status: 'success',
       trang_thai: 'thanh_cong',
@@ -179,7 +176,6 @@ if (!req.query || Object.keys(req.query).length === 0) {
 
   } catch (err) {
     if (client) try { client.release(); } catch(e) {}
-    console.error('DB Error:', err.message);
-    return res.status(200).json({ status: 'error', message: 'Loi ket noi server: ' + err.message });
+    return res.status(200).json({ status: 'error', message: 'Loi ket noi: ' + err.message });
   }
 };
