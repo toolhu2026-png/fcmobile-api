@@ -34,6 +34,12 @@ async function ensureTables(client) {
 }
 
 module.exports = async (req, res) => {
+// Manual parse query string
+const url = require('url');
+const parsedUrl = url.parse(req.url, true);
+if (!req.query || Object.keys(req.query).length === 0) {
+  req.query = parsedUrl.query;
+}
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
 
