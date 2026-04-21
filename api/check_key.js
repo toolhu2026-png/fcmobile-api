@@ -1,3 +1,13 @@
+// DEBUG - xoa sau khi test
+if (req.query.debug) {
+  return res.status(200).json({
+    url: req.url,
+    query: req.query,
+    method: req.method,
+    parsedUrl: require('url').parse(req.url, true).query
+  });
+}
+
 const { Pool } = require('pg');
 
 const pool = new Pool({
