@@ -1,10 +1,11 @@
 {
   "version": 2,
   "functions": {
-    "api/check_key.js": { "maxDuration": 30 },
-    "api/validate.js":  { "maxDuration": 30 },
-    "api/admin.js":     { "maxDuration": 30 },
-    "api/vtp.js":       { "maxDuration": 30 },
-    "api/mrt.js":       { "maxDuration": 30 }
+    "api/check_key.js":     { "maxDuration": 30 },
+    "api/validate.js":      { "maxDuration": 30 },
+    "api/admin.js":         { "maxDuration": 30 },
+    "api/vtp.js":           { "maxDuration": 30 },
+    "api/mrt.js":           { "maxDuration": 30 },
+    "api/recap_license.js": { "maxDuration": 30 }
   }
 }
